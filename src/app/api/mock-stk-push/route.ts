@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 
       console.log('HashPay payload:', JSON.stringify(payload, null, 2));
 
-      const res = await fetch('https://api.hashback.co.ke/initiatestk', {
+      const res = await fetch('https://api.hashback.co.ke/v2/initiatestk', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
