@@ -10,26 +10,41 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Missing fields' }, { status: 400 });
     }
 
-    // Normalize phone to 254XXXXXXXXX format
+    // Normalize phone
     let normalizedPhone = phone.replace(/\D/g, '');
     if (normalizedPhone.startsWith('0')) normalizedPhone = `254${normalizedPhone.slice(1)}`;
     if (!normalizedPhone.startsWith('254')) normalizedPhone = `254${normalizedPhone}`;
 
     console.log('Received payload:', JSON.stringify(body, null, 2));
 
-    // Check if HashPay env vars are set
-    if (process.env.HASHPAY_API_KEY && process.env.HASHPAY_ACCOUNT_ID) {
-      console.log('Using REAL HashPay integration');
+    // ==================== STRICT ALTERNATION BETWEEN ACCOUNTS ====================
+    const accounts = [
+      {
+        name: "Account 1",
+        api_key: process.env.HASHBACK_API_KEY_1,
+        account_id: process.env.HASHBACK_ACCOUNT_ID_1,
+      },
+      {
+        name: "Account 2",
+        api_key: process.env.HASHBACK_API_KEY_2,
+        account_id: process.env.HASHBACK_ACCOUNT_ID_2,
+      },
+    ];
+
+    // Strict round-robin alternation (changes every request)
+    const index = Date.now() % 2;   // 0 or 1 → alternates strictly
+    const selected = accounts[index];
+
+    if (selected.api_key && selected.account_id) {
+      console.log(`🔄 Using ${selected.name} (Strict Alternation)`);
 
       const payload = {
-        api_key: process.env.HASHPAY_API_KEY,
-        account_id: process.env.HASHPAY_ACCOUNT_ID,
-        amount: amount.toString(),               // HashPay wants string
+        api_key: selected.api_key,
+        account_id: selected.account_id,
+        amount: amount.toString(),
         msisdn: normalizedPhone,
         reference: apiRef,
       };
-
-      console.log('HashPay payload:', JSON.stringify(payload, null, 2));
 
       const res = await fetch('https://api.hashback.co.ke/v2/initiatestk', {
         method: 'POST',
@@ -39,29 +54,35 @@ export async function POST(request: Request) {
         body: JSON.stringify(payload),
       });
 
-      console.log('HashPay HTTP status:', res.status);
+      console.log('HashBack HTTP status:', res.status);
 
+      const text = await res.text();
       let data;
       try {
-        data = await res.json();
+        data = JSON.parse(text);
       } catch {
-        data = { raw: await res.text() };
+        data = { raw: text };
       }
 
-      console.log('HashPay response:', JSON.stringify(data, null, 2));
+      console.log('HashBack response:', JSON.stringify(data, null, 2));
 
       if (!res.ok) {
         return NextResponse.json(
-          { ok: false, error: data?.message || `HashPay failed with status ${res.status}` },
+          { ok: false, error: data?.message || `HashBack failed with status ${res.status}` },
           { status: res.status }
         );
       }
 
-      return NextResponse.json({ ok: true, message: 'STK push sent', data });
+      return NextResponse.json({ 
+        ok: true, 
+        message: 'STK push sent', 
+        data,
+        usedAccount: selected.name 
+      });
     }
 
     // Fallback to mock
-    console.log('Using SAFE MOCK (HashPay env vars missing)');
+    console.log('Using SAFE MOCK (No HashBack accounts configured)');
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     return NextResponse.json({
