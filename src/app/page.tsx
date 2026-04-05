@@ -1,230 +1,139 @@
 'use client';
-// src/app/page.tsx - Educational Demo Closely Matching ish-fuliza-boost.vercel.app
+// src/app/page.tsx - Exact Visual Match to ish-fuliza-boost.vercel.app (Educational Demo)
 
 import React, { useState, useEffect } from 'react';
 
-const formatKsh = (amount: number) => `Ksh ${amount.toLocaleString('en-KE')}`;
-
-const limits = [
-  { amount: 3000, fee: 250 },
-  { amount: 5000, fee: 293 },
-  { amount: 7500, fee: 350 },
-  { amount: 10000, fee: 500 },
-  { amount: 12500, fee: 747 },
-  { amount: 16000, fee: 898 },
-  { amount: 21000, fee: 1015 },
-  { amount: 25500, fee: 1220 },
-  { amount: 30000, fee: 1533 },
-  { amount: 35000, fee: 1730 },
-  { amount: 45000, fee: 2000 },
-  { amount: 60000, fee: 2250 },
-  { amount: 70000, fee: 2500 },
-];
-
-export default function IshFulizaBoostClone() {
-  const [step, setStep] = useState<'hero' | 'loading' | 'eligible' | 'select' | 'final'>('hero');
+export default function FulizaBoostExactClone() {
   const [usersOnline, setUsersOnline] = useState(137);
-  const [loadingMsg, setLoadingMsg] = useState('');
-  const [selectedLimit, setSelectedLimit] = useState(limits[0]);
-  const [showInputModal, setShowInputModal] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [idNumber, setIdNumber] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [step, setStep] = useState<'input' | 'loading' | 'result' | 'select'>('input');
 
-  // Live users online counter
+  // Live users online counter (like the real site)
   useEffect(() => {
     const interval = setInterval(() => {
-      setUsersOnline((prev) => prev + Math.floor(Math.random() * 4) + 1);
-    }, 2800);
+      setUsersOnline(prev => prev + Math.floor(Math.random() * 3) + 1);
+    }, 3200);
     return () => clearInterval(interval);
   }, []);
 
-  const loadingMessages = ["Connecting...", "Accessing secure databases..."];
-
   const handleCheckEligibility = () => {
-    setStep('loading');
-    let i = 0;
-    const interval = setInterval(() => {
-      setLoadingMsg(loadingMessages[i] || "Verifying account...");
-      i++;
-      if (i >= loadingMessages.length + 1) {
-        clearInterval(interval);
-        setTimeout(() => setStep('eligible'), 600);
-      }
-    }, 1300);
-  };
-
-  const handleProceedToUpgrade = () => {
-    setStep('select');
-  };
-
-  const handleSelectLimit = (limit: typeof limits[0]) => {
-    setSelectedLimit(limit);
-    setShowInputModal(true);   // Light modal for demo (you can comment this out for exact match)
-  };
-
-  const handleFakeSubmit = () => {
-    if (!phoneNumber || !idNumber) {
-      alert("Please enter details (this is a demo only)");
+    if (!phoneNumber.trim()) {
+      alert("Please enter your M-Pesa number (demo only)");
       return;
     }
-    setIsProcessing(true);
+    setIsChecking(true);
+    setStep('loading');
+
     setTimeout(() => {
-      setIsProcessing(false);
-      setShowInputModal(false);
-      setStep('final');
-    }, 1500);
+      setIsChecking(false);
+      setStep('result');   // Shows "High Trust Score" + Proceed button
+    }, 2200);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white font-sans">
-      {/* RED WARNING BANNER - KEEP FOR YOUR SAFARICOM PRESENTATION */}
-      {/*<div className="bg-red-600 text-white py-3 text-center text-xs font-bold tracking-wide">
-        🚨 EDUCATIONAL PHISHING DEMO ONLY — FOR SAFARICOM CYBERSECURITY JOB APPLICATION<br />
-        DO NOT ENTER REAL INFORMATION — THIS IS A SIMULATION
-      </div>*/}
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center px-4 py-8 font-sans">
+      {/* RED WARNING BANNER - REQUIRED FOR YOUR SAFARICOM JOB PRESENTATION */}
+      <div className="fixed top-0 left-0 right-0 bg-red-600 text-white text-center py-2 text-xs font-bold z-50">
+        🚨 EDUCATIONAL PHISHING SIMULATION ONLY — FOR SAFARICOM CYBERSECURITY JOB APPLICATION<br />
+        DO NOT ENTER REAL M-PESA NUMBER OR DATA
+      </div>
 
-      {/* Header */}
-      <header className="bg-emerald-600 text-white py-3 px-4 flex justify-between items-center sticky top-0 z-50">
-        <div className="font-bold text-2xl tracking-tight">Fuliza Plus+</div>
-        <div className="text-sm flex items-center gap-4">
-          <span><strong>{usersOnline}</strong> Users Online</span>
-          <span className="flex items-center gap-1">🔒 SSL Secured</span>
-        </div>
-      </header>
-
-      <div className="max-w-md mx-auto px-5 pt-8 pb-20">
-
-        {/* HERO */}
-        {step === 'hero' && (
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-emerald-700">Fuliza Plus+</h1>
-            <p className="text-emerald-600 font-medium mt-1">Official Verification Portal</p>
-            <p className="mt-6 text-gray-700">Verify your identity to unlock higher daily transaction limits.</p>
-
-            <button
-              onClick={handleCheckEligibility}
-              className="mt-12 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-2xl text-xl font-semibold shadow-xl transition"
-            >
-              Check My Eligibility
-            </button>
-
-            <div className="mt-16 text-xs text-gray-500 flex justify-center gap-8">
-              <span>Instant Limit Increase</span>
-              <span>•</span>
-              <span>Same Day Access</span>
+      <div className="w-full max-w-[380px]">
+        {/* Main White Card */}
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+          {/* Top Icon */}
+          <div className="flex justify-center pt-10 pb-6">
+            <div className="relative">
+              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center text-white text-3xl">
+                  👤
+                </div>
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow">
+                🛡️
+              </div>
             </div>
           </div>
-        )}
 
-        {/* LOADING */}
+          {/* Title Section */}
+          <div className="text-center px-8">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900">Fuliza Plus+</h1>
+            <p className="text-emerald-600 font-semibold mt-1 text-lg">OFFICIAL VERIFICATION PORTAL</p>
+            <p className="text-gray-600 mt-6 text-[15px] leading-relaxed">
+              Verify your identity to unlock higher daily transaction limits.
+            </p>
+          </div>
+
+          {/* Input Field */}
+          {step === 'input' && (
+            <div className="px-8 mt-10">
+              <div className="relative">
+                <div className="absolute left-5 top-4 text-emerald-600">
+                  📱
+                </div>
+                <input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="Enter M-Pesa Number"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-14 pr-6 py-4 text-base outline-none focus:border-emerald-500 transition"
+                />
+              </div>
+
+              <button
+                onClick={handleCheckEligibility}
+                disabled={isChecking}
+                className="mt-6 w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 transition py-4 rounded-2xl text-white font-semibold text-lg flex items-center justify-center gap-2"
+              >
+                Check My Eligibility 
+                <span>›</span>
+              </button>
+            </div>
+          )}
+
+          {/* Bottom Bar */}
+          <div className="mt-12 border-t border-gray-100 py-4 px-8 flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center gap-1.5">
+              <span className="text-emerald-500">●</span>
+              <span>{usersOnline} USERS ONLINE</span>
+            </div>
+            <div className="flex items-center gap-1">
+              🔒 SSL SECURED
+            </div>
+          </div>
+        </div>
+
+        {/* Loading Screen */}
         {step === 'loading' && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-            <div className="bg-white rounded-3xl p-12 w-80 text-center">
+            <div className="bg-white rounded-3xl p-10 w-[320px] text-center">
               <div className="animate-spin h-12 w-12 border-4 border-emerald-600 border-t-transparent rounded-full mx-auto"></div>
-              <p className="mt-8 text-xl font-medium text-gray-800">{loadingMsg}</p>
+              <p className="mt-6 text-gray-700 font-medium">Connecting to Safaricom servers...</p>
+              <p className="text-xs text-gray-500 mt-8">Please wait • Do not close</p>
             </div>
           </div>
         )}
 
-        {/* ELIGIBLE RESULT */}
-        {step === 'eligible' && (
-          <div className="text-center">
-            <div className="text-4xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold text-emerald-700">Congratulations!</h2>
-            <p className="mt-4 text-xl text-gray-800">High Trust Score Detected.</p>
-            <p className="text-gray-700 mt-2">is eligible for a boost.</p>
+        {/* Result Screen (High Trust Score + Proceed) */}
+        {step === 'result' && (
+          <div className="mt-8 bg-white rounded-3xl shadow-xl p-8 text-center">
+            <div className="text-5xl mb-4">🎉</div>
+            <h2 className="text-2xl font-bold text-emerald-700">Congratulations!</h2>
+            <p className="text-xl mt-2">High Trust Score Detected</p>
+            <p className="text-gray-600 mt-6">Your account is eligible for a Fuliza boost.</p>
 
-            <button
-              onClick={handleProceedToUpgrade}
-              className="mt-12 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-2xl text-xl font-semibold"
+            <button 
+              onClick={() => setStep('select')}
+              className="mt-10 w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl text-white font-semibold text-lg"
             >
               Proceed to Upgrade Limit
             </button>
           </div>
         )}
 
-        {/* LIMIT SELECTION */}
-        {step === 'select' && (
-          <div>
-            <h2 className="text-2xl font-semibold text-center text-emerald-700 mb-8">
-              Select Your New Approved Limit
-            </h2>
-            <div className="grid grid-cols-2 gap-4">
-              {limits.map((opt) => (
-                <button
-                  key={opt.amount}
-                  onClick={() => handleSelectLimit(opt)}
-                  className="bg-white border-2 border-emerald-100 hover:border-emerald-600 rounded-2xl p-6 text-left transition-all active:scale-95"
-                >
-                  <div className="text-2xl font-bold text-emerald-700">{formatKsh(opt.amount)}</div>
-                  <div className="text-sm text-gray-500 mt-3">
-                    Fee: {formatKsh(opt.fee)}
-                  </div>
-                </button>
-              ))}
-            </div>
-            <p className="text-center text-xs text-gray-500 mt-10">SELECT A LIMIT</p>
-          </div>
-        )}
-
-        {/* FINAL RESULT SCREEN */}
-        {step === 'final' && (
-          <div className="text-center py-12">
-            <h2 className="text-3xl font-bold text-emerald-700">Limit will be boosted to</h2>
-            <p className="text-7xl font-bold text-emerald-600 mt-6">Ksh 0</p>
-            <p className="mt-8 text-red-500 text-sm">* Final amount depends on full verification</p>
-          </div>
-        )}
+        {/* You can expand 'select' step with limit grid if needed */}
       </div>
-
-      {/* Input Modal (Educational - shows how scams collect data) */}
-      {showInputModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-3xl w-full max-w-md p-8">
-            <h3 className="text-xl font-semibold text-center">Enter Details to Activate</h3>
-            <p className="text-center text-sm text-gray-500 mt-2">{formatKsh(selectedLimit.amount)} Limit</p>
-
-            <div className="mt-8 space-y-6">
-              <div>
-                <label className="block text-sm mb-2 font-medium">National ID Number</label>
-                <input
-                  type="text"
-                  value={idNumber}
-                  onChange={(e) => setIdNumber(e.target.value)}
-                  placeholder="12345678"
-                  className="w-full border rounded-2xl px-5 py-4 focus:border-emerald-600 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm mb-2 font-medium">Phone Number</label>
-                <div className="flex border rounded-2xl overflow-hidden focus-within:border-emerald-600">
-                  <div className="bg-gray-100 px-5 py-4 text-gray-600">+254</div>
-                  <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="712345678"
-                    className="flex-1 px-5 py-4 outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={handleFakeSubmit}
-              disabled={isProcessing}
-              className="mt-10 w-full bg-emerald-600 disabled:bg-gray-400 py-4 rounded-2xl text-white font-semibold text-lg"
-            >
-              {isProcessing ? "Processing..." : "Continue to Activation"}
-            </button>
-
-            <button onClick={() => setShowInputModal(false)} className="mt-4 w-full text-gray-500">
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
