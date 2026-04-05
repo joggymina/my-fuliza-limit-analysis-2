@@ -1,581 +1,250 @@
 'use client';
+// src/app/page.tsx  -  Educational Demo Matching ish-fuliza-boost.vercel.app
 
-// src/app/page.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-function formatKsh(amount: number): string {
-  return `Ksh ${amount.toLocaleString('en-KE')}`;
-}
+const formatKsh = (amount: number) => `Ksh ${amount.toLocaleString('en-KE')}`;
 
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+const limits = [
+  { amount: 3000, fee: 250 },
+  { amount: 5000, fee: 293 },
+  { amount: 7500, fee: 350 },
+  { amount: 10000, fee: 500 },
+  { amount: 12500, fee: 747 },
+  { amount: 16000, fee: 898 },
+  { amount: 21000, fee: 1015 },
+  { amount: 25500, fee: 1220 },
+  { amount: 30000, fee: 1533 },
+  { amount: 35000, fee: 1730 },
+  { amount: 45000, fee: 2000 },
+  { amount: 60000, fee: 2250 },
+  { amount: 70000, fee: 2500 },
+];
 
-function generateMaskedPhone(): string {
-  const prefix = `07${randomInt(0, 4)}`;
-  const suffix = `${randomInt(0, 9)}${randomInt(0, 9)}`;
-  return `${prefix}${randomInt(0, 9)}****${suffix}`;
-}
+export default function FulizaBoostClone() {
+  const [step, setStep] = useState<'hero' | 'loading' | 'result' | 'select' | 'modal'>('hero');
+  const [usersOnline, setUsersOnline] = useState(138);
+  const [loadingMsg, setLoadingMsg] = useState('');
+  const [selectedLimit, setSelectedLimit] = useState(limits[3]); // default 10,000
+  const [idNumber, setIdNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
-export default function FulizaBoostPage() {
-  const limits = React.useMemo(
-    () => [
-      { amount: 2700, fee: 1 },
-      { amount: 5000, fee: 183 },
-      { amount: 10000, fee: 270 },
-      { amount: 16500, fee: 427 },
-      { amount: 21000, fee: 590 },
-      { amount: 32000, fee: 760 },
-      { amount: 44000, fee: 997 },
-      { amount: 53000, fee: 1299 },
-      { amount: 62000, fee: 1650 },
-      { amount: 75000, fee: 2090 },
-    ],
-    []
-  );
-
-  const [selectedAmount, setSelectedAmount] = React.useState(limits[0]?.amount ?? 0);
-  const selectedOption = React.useMemo(
-    () => limits.find((opt) => opt.amount === selectedAmount) ?? null,
-    [limits, selectedAmount]
-  );
-
-  const [isModalOpen, setModalOpen] = React.useState(false);
-  const [isReviewOpen, setReviewOpen] = React.useState(false);
-  const [isSuccessOpen, setSuccessOpen] = React.useState(false);
-  const [showContact, setShowContact] = React.useState(false);     // button visible after 5s
-  const [isContactActive, setIsContactActive] = React.useState(false); // active/clickable after 15s
-  const [showNotification, setShowNotification] = React.useState(false);
-
-  const [idNumber, setIdNumber] = React.useState('');
-  const [phoneNumber, setPhoneNumber] = React.useState('');
-  const [isLoading, setLoading] = React.useState(false);
-  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
-
-  const [recentIncrease, setRecentIncrease] = React.useState({
-    phone: '07XX****XX',
-    amount: 0,
-  });
-
-  React.useEffect(() => {
-    setRecentIncrease({
-      phone: generateMaskedPhone(),
-      amount: limits[randomInt(0, limits.length - 1)]?.amount ?? 16400,
-    });
-
+  // Live users online
+  useEffect(() => {
     const interval = setInterval(() => {
-      setRecentIncrease({
-        phone: generateMaskedPhone(),
-        amount: limits[randomInt(0, limits.length - 1)]?.amount ?? 16400,
-      });
-    }, 2000);
-
+      setUsersOnline((prev) => prev + Math.floor(Math.random() * 3) + 1);
+    }, 3000);
     return () => clearInterval(interval);
-  }, [limits]);
+  }, []);
 
-  const fee = selectedOption?.fee ?? 0;
-  const isValid = idNumber.trim().length > 3 && phoneNumber.replace(/\D/g, '').length >= 9;
+  const loadingMessages = [
+    "Connecting...",
+    "Accessing secure databases...",
+    "Initialising...",
+    "Verifying account status...",
+    "Calculating new limit..."
+  ];
 
-  function handleCloseModal() {
-    if (!isLoading) setModalOpen(false);
-  }
-
-  function handleContinue() {
-    if (!isValid) return;
-    setModalOpen(false);
-    setReviewOpen(true);
-  }
-
-  async function handleConfirmPayment() {
-    if (!selectedOption) return;
-
-    setLoading(true);
-    setErrorMsg(null);
-
-    const cleanedPhone = phoneNumber.replace(/\D/g, '');
-    const payload = {
-      phone: cleanedPhone.startsWith('254')
-        ? cleanedPhone
-        : cleanedPhone.startsWith('0')
-        ? `254${cleanedPhone.slice(1)}`
-        : `254${cleanedPhone}`,
-      amount: selectedOption.fee,
-      apiRef: idNumber.trim() || `ref-${Date.now()}`,
-    };
-
-    console.log('Sending payload to API:', payload);
-
-    try {
-      const res = await fetch('/api/mock-stk-push', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      console.log('API response status:', res.status);
-
-      const data = await res.json();
-
-      if (!res.ok || !data?.ok) {
-        throw new Error(data?.error || `Failed with status ${res.status}`);
+  const handleCheckEligibility = () => {
+    setStep('loading');
+    let i = 0;
+    const interval = setInterval(() => {
+      setLoadingMsg(loadingMessages[i] || "Eligibility confirmed!");
+      i++;
+      if (i >= loadingMessages.length) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setStep('result');
+        }, 800);
       }
+    }, 1200);
+  };
 
-      setReviewOpen(false);
-      setSuccessOpen(true);
+  const handleProceed = () => {
+    setStep('select');
+  };
 
-    } catch (err: any) {
-      console.error('Fetch error:', err);
-      setErrorMsg(err.message || 'Payment initiation failed');
-    } finally {
-      setLoading(false);
-    }
-  }
+  const openPaymentModal = (limit: typeof limits[0]) => {
+    setSelectedLimit(limit);
+    setStep('modal');
+  };
 
-  function handleCancelReview() {
-    setReviewOpen(false);
-  }
-
-  function handleReturnToDashboard() {
-    setSuccessOpen(false);
-    setReviewOpen(false);
-    setSelectedAmount(limits[0]?.amount ?? 0);
-    setIdNumber('');
-    setPhoneNumber('');
-    setErrorMsg(null);
-    setShowContact(false);
-    setIsContactActive(false);
-    setShowNotification(false);
-  }
-
-  // Show button after 5s, make it active after 15s
-  React.useEffect(() => {
-    if (isSuccessOpen) {
-      const timerShow = setTimeout(() => {
-        setShowContact(true);
-      }, 5000); // 5 seconds - visible but inactive
-
-      const timerActive = setTimeout(() => {
-        setIsContactActive(true);
-      }, 15000); // 15 seconds - becomes clickable
-
-      return () => {
-        clearTimeout(timerShow);
-        clearTimeout(timerActive);
-      };
-    }
-  }, [isSuccessOpen]);
-
-  // Handle click on inactive button → show notification
-  function handleContactClick() {
-    if (!isContactActive) {
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 4000); // hide after 4s
+  const handleSubmit = async () => {
+    if (!idNumber || phoneNumber.replace(/\D/g, '').length < 9) {
+      alert("Please fill in ID and Phone Number (demo only)");
       return;
     }
-
-    // Active → open Telegram
-    window.open('https://t.me/agent_betty_official', '_blank');
-  }
+    setIsProcessing(true);
+    // Simulate STK push
+    setTimeout(() => {
+      setIsProcessing(false);
+      alert("Demo: M-PESA STK Push sent (this is a simulation for educational purposes only)");
+      // In real demo you could move to success screen here
+    }, 2000);
+  };
 
   return (
-    <>
-      {/* Main Page + Modal */}
-      {!isReviewOpen && !isSuccessOpen && (
-        <div className="min-h-screen bg-gradient-to-b from-[#e6fff2] to-[#f0fff5]">
-          <main className="mx-auto flex w-full max-w-sm flex-col gap-3 px-4 pb-10 pt-4">
-            {/* Header */}
-            <header className="flex flex-col items-center gap-1">
-              <div className="text-xl font-semibold tracking-tight text-[#0cc45f]">Fuliza Limit Boost</div>
-              <div className="text-center text-[11px] text-slate-500">
-                Instant Limit Increase - No Paperwork - Same Day Access
-              </div>
-            </header>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white font-sans">
+      {/* RED EDUCATIONAL WARNING - MUST KEEP FOR JOB PRESENTATION */}
+      <div className="bg-red-600 text-white text-center py-2.5 text-xs font-bold tracking-wide">
+        🚨 THIS IS AN EDUCATIONAL PHISHING DEMO ONLY — FOR SAFARICOM CYBERSECURITY JOB APPLICATION<br />
+        DO NOT ENTER REAL DATA — REAL FULIZA CANNOT BE BOOSTED VIA WEBSITES
+      </div>
 
-            {/* Info banner */}
-            <section className="rounded-xl border border-[#0cc45f]/30 bg-white/70 px-4 py-3 shadow-sm backdrop-blur">
-              <div className="flex items-start gap-2">
-                <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#0cc45f] text-white">
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 5v14" />
-                    <path d="M5 12h14" />
-                  </svg>
-                </div>
-                <div className="text-center text-[12px] leading-4 text-slate-600">
-                  Choose your new Fuliza limit and complete the payment to get instant access.
-                </div>
-              </div>
-            </section>
-
-            {/* Fake recent increases */}
-            <section className="rounded-xl bg-gradient-to-r from-[#e6fff2] to-[#f0fff5] px-4 py-3 shadow-sm ring-1 ring-slate-200">
-              <div className="flex items-center gap-2 text-[12px] text-slate-700">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0cc45f]/10 text-[#0cc45f]">
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 12h10" />
-                    <path d="M10 6l6 6-6 6" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <span className="font-semibold text-[#0cc45f]">Recent increases</span>
-                  <div className="text-[11px] text-slate-600">
-                    {recentIncrease.phone} increased to {formatKsh(recentIncrease.amount)} - just now
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Limit selection */}
-            <section className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-              <div className="border-t-4 border-[#0cc45f] px-4 pb-4 pt-4">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0cc45f]/10 text-[#0cc45f]">
-                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M4 7h16" />
-                      <path d="M4 17h16" />
-                      <path d="M7 11h10" />
-                    </svg>
-                  </div>
-                  <div className="text-sm font-semibold text-[#0cc45f]">Select Your Fuliza Limit</div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  {limits.map((opt) => {
-                    const isSelected = opt.amount === selectedAmount;
-                    return (
-                      <button
-                        key={opt.amount}
-                        type="button"
-                        onClick={() => {
-                          setSelectedAmount(opt.amount);
-                          setModalOpen(true);
-                          setErrorMsg(null);
-                        }}
-                        className={`rounded-xl border px-3 py-3 text-left shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#0cc45f]/40 cursor-pointer ${
-                          isSelected
-                            ? 'border-[#0cc45f] ring-2 ring-[#0cc45f]/30 bg-[#0cc45f]/10 scale-105'
-                            : 'border-slate-200 hover:border-[#0cc45f]/50 hover:bg-[#0cc45f]/5 hover:scale-102'
-                        }`}
-                      >
-                        <div className="text-xs font-semibold text-[#0cc45f]">{formatKsh(opt.amount)}</div>
-                        <div className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600">
-                          Fee: Ksh {opt.fee.toLocaleString('en-KE')}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {selectedOption && (
-                  <div className="mt-3 text-center text-[11px] text-slate-500">
-                    Selected: {formatKsh(selectedOption.amount)} • Fee: Ksh {selectedOption.fee.toLocaleString('en-KE')}
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* Badges */}
-            <section className="grid grid-cols-2 gap-3 pt-1">
-              <div className="flex items-center justify-center gap-2 rounded-full bg-white/70 px-3 py-2 text-[11px] text-slate-600 shadow-sm ring-1 ring-slate-200">
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#0cc45f]/10 text-[#0cc45f]">
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 2l8 4v6c0 5-3.5 9.5-8 10-4.5-.5-8-5-8-10V6l8-4z" />
-                  </svg>
-                </span>
-                Secure
-              </div>
-
-              <div className="flex items-center justify-center gap-2 rounded-full bg-white/70 px-3 py-2 text-[11px] text-slate-600 shadow-sm ring-1 ring-slate-200">
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#0cc45f]/10 text-[#0cc45f]">
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M7 11V7a5 5 0 0110 0v4" />
-                    <path d="M5 11h14v10H5z" />
-                  </svg>
-                </span>
-                Encrypted
-              </div>
-
-              <div className="flex items-center justify-center gap-2 rounded-full bg-white/70 px-3 py-2 text-[11px] text-slate-600 shadow-sm ring-1 ring-slate-200">
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#0cc45f]/10 text-[#0cc45f]">
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 2v10" />
-                    <path d="M6 12l6 6 6-6" />
-                  </svg>
-                </span>
-                Instant
-              </div>
-
-              <div className="flex items-center justify-center gap-2 rounded-full bg-white/70 px-3 py-2 text-[11px] text-slate-600 shadow-sm ring-1 ring-slate-200">
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#0cc45f]/10 text-[#0cc45f]">
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 6L9 17l-5-5" />
-                  </svg>
-                </span>
-                Verified
-              </div>
-            </section>
-
-            {/* Payment Details Modal */}
-            {isModalOpen && (
-              <div className="fixed inset-0 z-50 flex items-end justify-center px-4 pb-6 pt-10 sm:items-center sm:pb-10">
-                <button
-                  type="button"
-                  aria-label="Close"
-                  onClick={handleCloseModal}
-                  className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-                />
-
-                <div className="relative w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl ring-1 ring-slate-200">
-                  <div className="flex flex-col items-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-[#0cc45f]/30 text-[#0cc45f]">
-                      <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 18h.01" />
-                        <path d="M12 14a4 4 0 10-4-4" />
-                        <path d="M12 10V6" />
-                      </svg>
-                    </div>
-
-                    <div className="mt-3 text-lg font-semibold text-[#0cc45f]">Enter Your Details</div>
-
-                    <div className="mt-2 flex items-center gap-2 text-sm text-slate-600">
-                      <svg viewBox="0 0 24 24" className="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                      Provide your details to proceed
-                    </div>
-                  </div>
-
-                  <div className="mt-5">
-                    {/* ID Number */}
-                    <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-[#0cc45f]">
-                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M4 7h16" />
-                        <path d="M4 17h16" />
-                        <path d="M7 11h10" />
-                      </svg>
-                      ID Number
-                    </div>
-                    <input
-                      value={idNumber}
-                      onChange={(e) => setIdNumber(e.target.value)}
-                      placeholder="Enter your ID number"
-                      inputMode="numeric"
-                      className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none focus:border-[#0cc45f] focus:ring-2 focus:ring-[#0cc45f]/20"
-                    />
-
-                    {/* Phone Number */}
-                    <div className="mt-4">
-                      <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-[#0cc45f]">
-                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M7 4h10v16H7z" />
-                          <path d="M11 5h2" />
-                          <path d="M12 17h.01" />
-                        </svg>
-                        Phone Number
-                      </div>
-                      <div className="flex overflow-hidden rounded-xl border border-slate-200 shadow-sm focus-within:border-[#0cc45f] focus-within:ring-2 focus-within:ring-[#0cc45f]/20">
-                        <div className="flex items-center justify-center bg-slate-50 px-4 text-sm font-semibold text-slate-700">
-                          +254
-                        </div>
-                        <input
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
-                          placeholder="712 345 678"
-                          inputMode="numeric"
-                          className="min-w-0 flex-1 px-4 py-3 text-sm text-slate-800 outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Payment info */}
-                    <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                      <div className="flex items-start gap-2">
-                        <svg viewBox="0 0 24 24" className="mt-0.5 h-4 w-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="M12 16v-4" />
-                          <path d="M12 8h.01" />
-                        </svg>
-                        <div>
-                          We'll send an M-Pesa STK push to your phone number for payment
-                          {fee ? ` (Fee: Ksh ${fee.toLocaleString('en-KE')})` : ''}.
-                        </div>
-                      </div>
-                    </div>
-
-                    {errorMsg && (
-                      <div className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700 ring-1 ring-rose-200">
-                        {errorMsg}
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={handleContinue}
-                      disabled={!isValid || isLoading}
-                      className={`mt-6 w-full rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[#0cc45f]/40 ${
-                        !isValid || isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0cc45f] hover:bg-[#0bb04f]'
-                      }`}
-                    >
-                      {isLoading ? 'Processing...' : 'Continue'}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleCloseModal}
-                      disabled={isLoading}
-                      className={`mt-3 w-full rounded-xl border px-4 py-3 text-sm font-semibold shadow-sm transition-colors ${
-                        isLoading ? 'cursor-not-allowed border-slate-200 bg-white text-slate-400' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </main>
+      {/* Header */}
+      <header className="bg-emerald-600 text-white py-4 px-4 flex items-center justify-between sticky top-0 z-50">
+        <div className="font-bold text-2xl">Fuliza Plus+</div>
+        <div className="flex items-center gap-4 text-sm">
+          <div>
+            <span className="font-semibold">{usersOnline}</span> Users Online
+          </div>
+          <div className="flex items-center gap-1">
+            🔒 <span>SSL Secured</span>
+          </div>
         </div>
-      )}
+      </header>
 
-      {/* Review Request Screen */}
-      {isReviewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-[#e6fff2] to-[#f0fff5] px-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl ring-1 ring-slate-200">
-            <h1 className="text-3xl font-bold text-[#0cc45f] mb-1">Fuliza Limit Boost</h1>
-            <div className="h-1 bg-[#0cc45f] w-16 mx-auto mb-6 rounded-full"></div>
+      <div className="max-w-md mx-auto px-4 pt-8 pb-20">
 
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Review Request</h2>
-            <p className="text-gray-600 mb-8">
-              Confirm your selection before we initiate the STK push.
+        {/* HERO / MAIN SCREEN */}
+        {step === 'hero' && (
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-1 rounded-full text-sm mb-6">
+              Official Verification Portal
+            </div>
+            <h1 className="text-4xl font-bold text-emerald-700">Congratulations!</h1>
+            <p className="mt-3 text-2xl font-semibold text-gray-800">High Trust Score Detected</p>
+            <p className="mt-8 text-lg text-gray-700">
+              Your M-PESA account is eligible for an instant Fuliza limit boost.
             </p>
 
-            <div className="space-y-6 mb-10">
-              <div className="flex justify-between items-center border-b border-gray-200 pb-4">
-                <span className="text-gray-700 font-medium">New Limit</span>
-                <span className="text-[#0cc45f] font-bold text-xl">{formatKsh(selectedAmount)}</span>
-              </div>
+            <button
+              onClick={handleCheckEligibility}
+              className="mt-12 w-full bg-emerald-600 hover:bg-emerald-700 transition py-5 rounded-2xl text-white text-xl font-semibold shadow-xl"
+            >
+              Check My Eligibility
+            </button>
 
-              <div className="flex justify-between items-center border-b border-gray-200 pb-4">
-                <span className="text-gray-700 font-medium">Processing Fee</span>
-                <span className="text-[#0cc45f] font-bold text-xl">Ksh {fee.toLocaleString('en-KE')}</span>
-              </div>
+            <div className="mt-16 text-xs text-gray-500">
+              Instant Limit Increase • Same Day Access • No Paperwork
+            </div>
+          </div>
+        )}
 
-              <div className="flex justify-between items-center">
-                <span className="text-gray-700 font-medium">PAYMENT PHONE</span>
-                <div className="text-right">
-                  <div className="text-[#0cc45f] font-medium">+254 {phoneNumber.replace(/\D/g, '').slice(-9)}</div>{/*
-                  <div className="text-xs text-gray-500">• +254{phoneNumber.replace(/\D/g, '').slice(-9)}</div>*/}
-                </div>
-              </div>
+        {/* LOADING SCREEN */}
+        {step === 'loading' && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+            <div className="bg-white rounded-3xl p-10 w-80 text-center shadow-2xl">
+              <div className="animate-spin mx-auto h-14 w-14 border-4 border-emerald-600 border-t-transparent rounded-full"></div>
+              <p className="mt-8 text-lg font-medium text-gray-700">{loadingMsg}</p>
+              <p className="text-xs text-gray-500 mt-10">Please wait • Do not refresh</p>
+            </div>
+          </div>
+        )}
+
+        {/* RESULT SCREEN - Shows "Ksh 0" like the original */}
+        {step === 'result' && (
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-emerald-700">Eligibility Confirmed</h2>
+            <div className="mt-10 bg-white rounded-3xl p-10 shadow">
+              <p className="text-gray-600">Your Fuliza limit will be boosted to</p>
+              <p className="text-6xl font-bold text-emerald-600 mt-4">Ksh 0</p>
+              <p className="text-xs text-rose-500 mt-8">* Final limit depends on verification</p>
             </div>
 
             <button
-              onClick={handleConfirmPayment}
-              disabled={isLoading}
-              className={`w-full rounded-xl px-6 py-4 text-lg font-semibold text-white shadow-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#0cc45f]/40 mb-4 ${
-                isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0cc45f] hover:bg-[#0bb04f]'
-              }`}
+              onClick={handleProceed}
+              className="mt-12 w-full bg-emerald-600 hover:bg-emerald-700 py-5 rounded-2xl text-white text-xl font-semibold"
             >
-              {isLoading ? 'Processing...' : `Pay Ksh ${fee.toLocaleString('en-KE')} & Boost`}
+              Proceed to Upgrade Limit
             </button>
-
-            <button
-              onClick={handleCancelReview}
-              className="w-full text-center text-gray-600 hover:text-gray-800 font-medium"
-            >
-              Cancel Request
-            </button>
-
-            {errorMsg && (
-              <div className="mt-6 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700 ring-1 ring-rose-200">
-                {errorMsg}
-              </div>
-            )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Success Screen */}
-      {isSuccessOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-[#e6fff2] to-[#f0fff5] px-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl ring-1 ring-slate-200 text-center relative">
-            <h1 className="text-4xl font-bold text-[#0cc45f] mb-2">Success!</h1>
-            <p className="text-lg font-semibold text-gray-800 mb-6">
-              Your boost of {formatKsh(selectedAmount)} has been successfully processed.
+        {/* LIMIT SELECTION SCREEN */}
+        {step === 'select' && (
+          <div>
+            <h2 className="text-center text-2xl font-semibold text-emerald-700 mb-8">
+              Select Your New Approved Limit
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              {limits.map((opt) => (
+                <button
+                  key={opt.amount}
+                  onClick={() => openPaymentModal(opt)}
+                  className="bg-white border border-emerald-200 hover:border-emerald-600 hover:shadow-md transition-all rounded-2xl p-5 text-left"
+                >
+                  <div className="font-bold text-xl text-emerald-700">{formatKsh(opt.amount)}</div>
+                  <div className="text-xs text-gray-500 mt-2">
+                    Fee: {formatKsh(opt.fee)}
+                  </div>
+                </button>
+              ))}
+            </div>
+            <p className="text-center text-xs text-gray-500 mt-8">
+              SELECT A LIMIT • Secure Fuliza Application
             </p>
+          </div>
+        )}
 
-            <div className="bg-[#e6fff2] rounded-xl p-6 mb-8 border border-[#0cc45f]/30">
-              <div className="flex items-center justify-center gap-3 mb-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0cc45f] text-white text-xl font-bold">
-                  i
+        {/* PAYMENT / DETAILS MODAL */}
+        {step === 'modal' && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+            <div className="bg-white rounded-3xl w-full max-w-md p-8">
+              <h3 className="text-xl font-semibold text-center text-emerald-700">
+                Enter Details to Activate {formatKsh(selectedLimit.amount)}
+              </h3>
+
+              <div className="mt-8 space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">National ID Number</label>
+                  <input
+                    type="text"
+                    value={idNumber}
+                    onChange={(e) => setIdNumber(e.target.value)}
+                    placeholder="12345678"
+                    className="w-full border border-gray-300 focus:border-emerald-600 rounded-2xl px-5 py-4 outline-none"
+                  />
                 </div>
-                <p className="text-[#0cc45f] font-medium">Final Step</p>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Phone Number</label>
+                  <div className="flex rounded-2xl overflow-hidden border border-gray-300 focus-within:border-emerald-600">
+                    <div className="bg-gray-100 px-5 flex items-center text-gray-600 font-medium">+254</div>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="712345678"
+                      className="flex-1 px-5 py-4 outline-none"
+                    />
+                  </div>
+                </div>
               </div>
-              <p className="text-gray-700 leading-relaxed">
-                Enter your M-Pesa PIN on the prompt showing on your phone currently to activate your new limit.
+
+              <button
+                onClick={handleSubmit}
+                disabled={isProcessing}
+                className="mt-10 w-full bg-emerald-600 disabled:bg-gray-400 py-4 rounded-2xl text-white font-semibold text-lg"
+              >
+                {isProcessing ? "Sending M-PESA Prompt..." : "Pay Fee & Activate"}
+              </button>
+
+              <button
+                onClick={() => setStep('select')}
+                className="mt-4 w-full text-gray-500 py-3"
+              >
+                Cancel
+              </button>
+
+              <p className="text-center text-[10px] text-rose-600 mt-6">
+                ⚠️ Never share your M-PESA PIN on any website
               </p>
             </div>
-
-            <button
-              onClick={handleReturnToDashboard}
-              className="w-full rounded-xl bg-[#0cc45f] px-6 py-4 text-lg font-semibold text-white shadow-lg hover:bg-[#0bb04f] transition-colors focus:outline-none focus:ring-2 focus:ring-[#0cc45f]/40 mb-4"
-            >
-              Return to Dashboard
-            </button>
-
-            {/* Contact Us button */}
-            <button
-              onClick={handleContactClick}
-              className={`w-full rounded-xl border-2 px-6 py-4 text-lg font-semibold shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#0cc45f]/40 mt-4 ${
-                showContact
-                  ? isContactActive
-                    ? 'border-[#0cc45f] text-[#0cc45f] hover:bg-[#0cc45f]/10 cursor-pointer'
-                    : 'border-gray-300 text-gray-400 cursor-not-allowed opacity-70'
-                  : 'opacity-0 pointer-events-none'
-              }`}
-              style={{ transition: 'opacity 0.6s ease, transform 0.6s ease' }}
-            >
-              Contact Us for Help
-            </button>
-
-            {/* Notification when clicking inactive button */}
-            {showNotification && (
-              <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-rose-600 text-white px-6 py-3 rounded-xl shadow-lg animate-fade-in-out z-50">
-                Complete the process with your PIN to activate support
-              </div>
-            )}
-
-            {/* Timer logic */}
-            {isSuccessOpen && <TimerToShowContact setShowContact={setShowContact} setIsContactActive={setIsContactActive} />}
           </div>
-        </div>
-      )}
-    </>
+        )}
+      </div>
+    </div>
   );
-}
-
-// Timer component - controls visibility (5s) and active state (15s)
-function TimerToShowContact({
-  setShowContact,
-  setIsContactActive,
-}: {
-  setShowContact: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsContactActive: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
-  React.useEffect(() => {
-    const timerShow = setTimeout(() => {
-      setShowContact(true);
-    }, 5000); // visible after 5 seconds
-
-    const timerActive = setTimeout(() => {
-      setIsContactActive(true);
-    }, 15000); // clickable after 15 seconds
-
-    return () => {
-      clearTimeout(timerShow);
-      clearTimeout(timerActive);
-    };
-  }, [setShowContact, setIsContactActive]);
-
-  return null;
 }
