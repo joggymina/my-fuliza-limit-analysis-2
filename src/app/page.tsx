@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 const formatKsh = (amount: number) => `Ksh ${amount.toLocaleString('en-KE')}`;
 
 const limits = [
-  { amount: 3000, fee: 250 },
+  { amount: 3000, fee: 1 },
   { amount: 5000, fee: 293 },
   { amount: 7500, fee: 350 },
   { amount: 10000, fee: 500 },
