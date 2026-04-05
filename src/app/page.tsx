@@ -79,10 +79,10 @@ export default function IshFulizaBoostClone() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white font-sans">
       {/* RED WARNING BANNER - KEEP FOR YOUR SAFARICOM PRESENTATION */}
-      <div className="bg-red-600 text-white py-3 text-center text-xs font-bold tracking-wide">
+      {/*<div className="bg-red-600 text-white py-3 text-center text-xs font-bold tracking-wide">
         🚨 EDUCATIONAL PHISHING DEMO ONLY — FOR SAFARICOM CYBERSECURITY JOB APPLICATION<br />
         DO NOT ENTER REAL INFORMATION — THIS IS A SIMULATION
-      </div>
+      </div>*/}
 
       {/* Header */}
       <header className="bg-emerald-600 text-white py-3 px-4 flex justify-between items-center sticky top-0 z-50">
