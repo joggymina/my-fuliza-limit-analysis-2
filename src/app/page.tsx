@@ -288,10 +288,10 @@ export default function FulizaBoostExactClone() {
               <p className="text-7xl font-bold text-emerald-600 mt-8">Ksh 0</p>
               <p className="mt-8 text-sm text-red-500">* Final amount depends on full verification</p>
             </div>
-          )}
+          )}*/}
         </div>
       </div>
-*/}
+
       {/* Secure Fuliza Application Modal */}
       {showSecureModal && selectedLimit && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
