@@ -24,7 +24,7 @@ const limits = [
 export default function FulizaBoostExactClone() {
   const [step, setStep] = useState<'input' | 'loading' | 'congrats' | 'select' | 'final'>('input');
   const [usersOnline, setUsersOnline] = useState(137);
-  const [phoneNumber, setPhoneNumber] = useState('0759211545');
+  const [phoneNumber, setPhoneNumber] = useState(' ');
   const [enteredPhone, setEnteredPhone] = useState('');
   const [loadingMsg, setLoadingMsg] = useState('');
 
