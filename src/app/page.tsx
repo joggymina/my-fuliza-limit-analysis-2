@@ -281,7 +281,7 @@ export default function FulizaBoostExactClone() {
             </div>
           )}
 
-          {/* Final Ksh 0 Screen */}
+          {/* Final Ksh 0 Screen 
           {step === 'final' && (
             <div className="px-8 py-16 text-center">
               <h2 className="text-3xl font-bold text-emerald-700">Limit will be boosted to</h2>
@@ -291,7 +291,7 @@ export default function FulizaBoostExactClone() {
           )}
         </div>
       </div>
-
+*/}
       {/* Secure Fuliza Application Modal */}
       {showSecureModal && selectedLimit && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
